@@ -3,6 +3,7 @@ package com.inventory.product.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inventory.product.dto.ProductRequest;
 import com.inventory.product.dto.ProductResponse;
+import com.inventory.product.entity.Product;
 import com.inventory.product.exception.ResourceNotFoundException;
 import com.inventory.product.security.JwtUtil;
 import com.inventory.product.service.ProductService;
@@ -102,21 +103,12 @@ class ProductControllerTest {
     }
 
     private ProductResponse sampleResponse() {
-        ProductRequest request = new ProductRequest();
-        request.setName("Teclado mecánico");
-        request.setDescription("Switches rojos");
-        request.setQuantity(10);
-        request.setPrice(new BigDecimal("150.00"));
-        return ProductResponse.fromEntity(toEntity(request));
-    }
-
-    private com.inventory.product.entity.Product toEntity(ProductRequest request) {
-        com.inventory.product.entity.Product product = new com.inventory.product.entity.Product();
+        Product product = new Product();
         product.setId(1L);
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-        product.setQuantity(request.getQuantity());
-        product.setPrice(request.getPrice());
-        return product;
+        product.setName("Teclado mecánico");
+        product.setDescription("Switches rojos");
+        product.setQuantity(10);
+        product.setPrice(new BigDecimal("150.00"));
+        return ProductResponse.fromEntity(product);
     }
 }
