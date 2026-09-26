@@ -1,0 +1,53 @@
+<form class="formulario-producto" [formGroup]="formulario" (ngSubmit)="enviar()">
+  <div class="campo">
+    <label for="nombre">Nombre *</label>
+    <input id="nombre" type="text" pInputText formControlName="nombre" />
+    @if (formulario.controls.nombre.invalid && formulario.controls.nombre.touched) {
+      <small class="error">
+        @if (formulario.controls.nombre.errors?.['required']) {
+          El nombre es obligatorio
+        } @else {
+          El nombre no puede superar los 150 caracteres
+        }
+      </small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="descripcion">Descripción</label>
+    <textarea id="descripcion" pInputTextarea rows="3" formControlName="descripcion"></textarea>
+    @if (formulario.controls.descripcion.invalid && formulario.controls.descripcion.touched) {
+      <small class="error">La descripción no puede superar los 1000 caracteres</small>
+    }
+  </div>
+
+  <div class="fila-campos">
+    <div class="campo">
+      <label for="cantidad">Cantidad *</label>
+      <p-inputNumber inputId="cantidad" formControlName="cantidad" [min]="0" [showButtons]="false"></p-inputNumber>
+      @if (formulario.controls.cantidad.invalid && formulario.controls.cantidad.touched) {
+        <small class="error">La cantidad debe ser 0 o mayor</small>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="precio">Precio *</label>
+      <p-inputNumber
+        inputId="precio"
+        formControlName="precio"
+        mode="currency"
+        currency="USD"
+        locale="es-PE"
+        [min]="0"
+      ></p-inputNumber>
+      @if (formulario.controls.precio.invalid && formulario.controls.precio.touched) {
+        <small class="error">El precio debe ser mayor a 0</small>
+      }
+    </div>
+  </div>
+
+  <div class="acciones">
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="cancelar.emit()"></button>
+    <button pButton type="submit" label="Guardar" [loading]="guardando"></button>
+  </div>
+</form>

@@ -1,125 +1,168 @@
-# Inventario de Productos — CRUD (Angular 18 + Spring Boot 2.7 / Java 8)
+# Inventario de productos
 
-Evaluación técnica TIP-SS-01: módulo de mantenimiento (CRUD) de productos, con:
+Aplicación con Angular 18, PrimeNG, Spring Boot 2.7 y MySQL 8. Permite iniciar sesión, buscar productos por nombre, crearlos, editarlos y eliminarlos.
 
-- **Frontend**: Angular 18 (standalone components) + PrimeNG.
-- **Backend**: Spring Boot 2.7 (Java 8) + Spring Data JPA + Spring Security con JWT.
-- **Base de datos**: MySQL 8.
-- **Documentación de API**: Swagger / OpenAPI (springdoc).
+## Estructura
 
-## Estructura del repositorio
-
+```text
+backend/
+  src/main/java/com/inventario/producto/
+    autenticacion/   Inicio de sesión y datos de autenticación
+    configuracion/  Seguridad, CORS y OpenAPI
+    controlador/    Rutas de productos
+    dto/            Solicitudes y respuestas
+    entidad/        Modelo de persistencia
+    excepcion/      Manejo de errores
+    repositorio/    Acceso a datos
+    seguridad/      Validación de JWT
+    servicio/       Operaciones de productos
+  src/main/resources/application.properties
+  pom.xml
+  Dockerfile
+frontend/
+  src/aplicacion/
+    funcionalidades/  Inicio de sesión y gestión de productos
+    nucleo/           Servicios, modelos y autenticación
+  src/principal.ts
+  src/estilos.scss
+  public/
+  angular.json
+  package.json
+  package-lock.json
+  tsconfig.json
+  tsconfig.app.json
+  Dockerfile
+docker-compose.yml
+README.md
 ```
-backend/     API REST en Spring Boot
-frontend/    SPA en Angular
-docker-compose.yml   Levanta MySQL + backend + frontend
-```
 
-## Opción A: levantar todo con Docker Compose (recomendado)
+## Ejecutar con Docker
 
-Requisitos: Docker y Docker Compose.
+Requiere Docker y Docker Compose. Desde la raíz del proyecto:
 
 ```bash
 docker compose up -d --build
 ```
 
-Esto levanta:
+| Servicio | Dirección |
+|---|---|
+| Aplicación | http://localhost:4200 |
+| API | http://localhost:8081/api |
+| Swagger | http://localhost:8081/swagger-ui.html |
+| MySQL | localhost:3306 |
 
-- MySQL en `localhost:3306` (db `products_db`, usuario `root`, password `root`)
-- Backend en `http://localhost:8081`
-- Frontend en `http://localhost:4200`
+Credenciales de acceso: **admin / admin123**. MySQL usa **root / root** y la base `inventario_db`.
 
-Para detener todo:
+Para detener los servicios conservando los datos:
 
 ```bash
 docker compose down
 ```
 
-## Opción B: correr cada parte manualmente
+## Ejecutar localmente
 
-### Backend
+Requiere JDK 8 u 11, Maven, Node.js 20.11.1 o superior de la rama 20 y MySQL 8.
 
-Requisitos: JDK 8 y Maven (o usa el wrapper/Docker si no tienes Java 8 instalado localmente).
+Puedes iniciar solo MySQL con Docker desde la raíz:
+
+```bash
+docker compose up -d mysql
+```
+
+Si usas una instalación propia de MySQL, crea primero la base `inventario_db` y configura las credenciales del backend.
+
+En una terminal, inicia el backend en el puerto que usa el frontend:
 
 ```bash
 cd backend
-# necesitas una instancia de MySQL accesible (ver docker-compose.yml para las credenciales por defecto)
-mvn spring-boot:run
+SERVER_PORT=8081 mvn spring-boot:run
 ```
 
-Variables de entorno relevantes (todas tienen defaults para desarrollo local):
-
-| Variable | Descripción | Default |
-|---|---|---|
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexión a MySQL | `localhost`, `3306`, `products_db`, `root`, `root` |
-| `AUTH_USERNAME`, `AUTH_PASSWORD` | Credenciales fijas para el login | `admin` / `admin123` |
-| `JWT_SECRET` | Clave para firmar los JWT | valor de desarrollo incluido, **cámbialo en producción** |
-| `JWT_EXPIRATION_MS` | Expiración del token en ms | `3600000` (1 hora) |
-| `CORS_ALLOWED_ORIGINS` | Orígenes permitidos por CORS | `http://localhost:4200` |
-
-El backend corre en `http://localhost:8080` por defecto (en Docker Compose se expone en `8081`).
-
-### Frontend
-
-Requisitos: Node.js 18+ y npm.
+En otra terminal:
 
 ```bash
 cd frontend
-npm install
-npm start   # ng serve, http://localhost:4200
+npm ci
+npm start
 ```
 
-Por defecto el frontend apunta a `http://localhost:8081/api` (ver `src/app/core/config/api.config.ts`).
+Abre `http://localhost:4200`. Sin `SERVER_PORT`, Spring Boot usa `8080`. La dirección de la API está definida en `frontend/src/aplicacion/nucleo/configuracion/api.configuracion.ts`.
 
-## Autenticación
+## Configuración del backend
 
-No hay registro de usuarios: el login (`POST /api/auth/login`) valida contra credenciales fijas configurables por variables de entorno.
+Los valores se encuentran en `backend/src/main/resources/application.properties` y pueden sobrescribirse mediante variables de entorno.
 
-- Usuario por defecto: `admin`
-- Contraseña por defecto: `admin123`
+| Variable | Valor predeterminado | Uso |
+|---|---|---|
+| `DB_HOST` | `localhost` | Servidor MySQL |
+| `DB_PORT` | `3306` | Puerto MySQL |
+| `DB_NAME` | `inventario_db` | Base de datos |
+| `DB_USER` | `root` | Usuario MySQL |
+| `DB_PASSWORD` | `root` | Contraseña MySQL |
+| `AUTH_USERNAME` | `admin` | Usuario de la aplicación |
+| `AUTH_PASSWORD` | `admin123` | Contraseña de la aplicación |
+| `JWT_SECRET` | Clave de desarrollo incluida | Firma de los tokens |
+| `JWT_EXPIRATION_MS` | `3600000` | Duración del token en milisegundos |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:4200` | Orígenes permitidos, separados por comas |
 
-El login devuelve un JWT que el frontend guarda y envía como `Authorization: Bearer <token>` en cada request a `/api/products/**`.
+En Docker, configura estas variables en `environment` del servicio `backend` en `docker-compose.yml`. Cambia las credenciales y `JWT_SECRET` antes de usar el proyecto fuera de desarrollo.
 
-## Documentación de la API (Swagger)
+Hibernate crea o actualiza la tabla `productos` dentro de la base configurada. Sus columnas son `id`, `nombre`, `descripcion`, `cantidad`, `precio`, `creado_en` y `actualizado_en`. La base de datos debe existir antes de iniciar el backend; Docker la crea al inicializar un volumen nuevo.
 
-Con el backend corriendo:
+## API
 
-- Swagger UI: `http://localhost:8081/swagger-ui.html` (o `8080` si corres el backend fuera de Docker)
-- OpenAPI JSON: `http://localhost:8081/v3/api-docs`
+| Método | Ruta | Operación |
+|---|---|---|
+| POST | `/api/autenticacion/iniciar-sesion` | Iniciar sesión |
+| GET | `/api/productos` | Listar productos; admite `?nombre=teclado` |
+| GET | `/api/productos/{id}` | Consultar un producto |
+| POST | `/api/productos` | Crear un producto |
+| PUT | `/api/productos/{id}` | Actualizar un producto |
+| DELETE | `/api/productos/{id}` | Eliminar un producto |
 
-## Endpoints principales
+El inicio de sesión recibe:
 
-| Método | Ruta | Descripción | Auth |
-|---|---|---|---|
-| POST | `/api/auth/login` | Login, devuelve JWT | No |
-| GET | `/api/products` | Lista productos (`?name=` para buscar) | Sí |
-| GET | `/api/products/{id}` | Obtiene un producto | Sí |
-| POST | `/api/products` | Crea un producto | Sí |
-| PUT | `/api/products/{id}` | Actualiza un producto | Sí |
-| DELETE | `/api/products/{id}` | Elimina un producto | Sí |
+```json
+{
+  "usuario": "admin",
+  "contrasena": "admin123"
+}
+```
 
-## Tests
+Devuelve `token` y `tipoToken`. Las rutas de productos requieren la cabecera `Authorization: Bearer <token>`.
+
+Para crear o actualizar un producto:
+
+```json
+{
+  "nombre": "Teclado",
+  "descripcion": "Teclado mecánico",
+  "cantidad": 10,
+  "precio": 150.00
+}
+```
+
+Las respuestas incluyen `id`, `creadoEn` y `actualizadoEn`. La especificación OpenAPI está disponible en `http://localhost:8081/v3/api-docs`.
+
+## Compilar
+
+Backend:
 
 ```bash
 cd backend
-mvn test
+mvn clean package
 ```
 
-Incluye tests unitarios del servicio (Mockito) y del controller (MockMvc), cubriendo el flujo CRUD, validaciones y manejo de errores.
+El ejecutable se genera en `backend/target/`.
 
-## Funcionalidades implementadas
+Frontend:
 
-**Frontend**
-- Listado de productos en tabla (PrimeNG `p-table`) con paginación.
-- Alta y edición de productos mediante formulario reactivo en un diálogo modal.
-- Eliminación con diálogo de confirmación.
-- Búsqueda por nombre en tiempo real (debounce contra el backend).
-- Validaciones de formulario (campos requeridos, longitudes, mínimos numéricos).
-- Login con JWT, interceptor HTTP que adjunta el token y guard de ruta.
+```bash
+cd frontend
+npm ci
+npm run build
+```
 
-**Backend**
-- API REST completa (GET/POST/PUT/DELETE) sobre `/api/products`.
-- Autenticación JWT sobre endpoint de login con credenciales fijas.
-- Validaciones de entrada con Bean Validation y manejo global de errores.
-- Persistencia en MySQL vía Spring Data JPA.
-- Documentación con Swagger/OpenAPI.
+La aplicación compilada se genera en `frontend/dist/frontend/browser/`. Para desarrollo se utiliza `npm start`; para publicar la compilación, el servidor web debe redirigir las rutas de la aplicación a `index.html`.
+
+Las dependencias instaladas, las cachés y los resultados de compilación se regeneran con estos comandos y están excluidos de Git y del contexto de Docker. El proyecto no incluye pruebas automatizadas.

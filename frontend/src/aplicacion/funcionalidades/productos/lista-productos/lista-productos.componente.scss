@@ -1,0 +1,45 @@
+.pagina {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.cabecera-pagina {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.barra-herramientas {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .campo-busqueda {
+    flex: 1;
+    max-width: 320px;
+
+    input {
+      width: 100%;
+    }
+  }
+}
+
+.columna-acciones {
+  width: 110px;
+  text-align: right;
+}
+
+.vacio {
+  text-align: center;
+  color: #6c757d;
+  padding: 1.5rem;
+}
