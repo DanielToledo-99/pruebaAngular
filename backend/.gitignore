@@ -1,17 +1,7 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-*.class
-
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.properties
-
-### IDE ###
-.idea/
-*.iws
+/target/
+/.idea/
+/.vscode/
 *.iml
-*.ipr
-.vscode/
+*.class
+*.log
 .DS_Store

@@ -1,0 +1,75 @@
+<div class="pagina">
+  <header class="cabecera-pagina">
+    <h1>Inventario de Productos</h1>
+    <button pButton type="button" label="Cerrar sesión" class="p-button-text" (click)="cerrarSesion()"></button>
+  </header>
+
+  <div class="barra-herramientas">
+    <p-iconField iconPosition="left" class="campo-busqueda">
+      <p-inputIcon class="pi pi-search"></p-inputIcon>
+      <input
+        type="text"
+        pInputText
+        placeholder="Buscar por nombre..."
+        [ngModel]="terminoBusqueda"
+        (ngModelChange)="alCambiarBusqueda($event)"
+      />
+    </p-iconField>
+
+    <button pButton type="button" icon="pi pi-plus" label="Agregar producto" (click)="abrirDialogoCreacion()"></button>
+  </div>
+
+  <p-table [value]="productos" [loading]="cargando" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th class="columna-acciones">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-producto>
+      <tr>
+        <td>{{ producto.nombre }}</td>
+        <td>{{ producto.descripcion || '—' }}</td>
+        <td>{{ producto.cantidad }}</td>
+        <td>{{ producto.precio | currency: 'USD' }}</td>
+        <td class="columna-acciones">
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-text" (click)="abrirDialogoEdicion(producto)"></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-text p-button-danger"
+            (click)="confirmarEliminacion(producto)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="vacio">No hay productos para mostrar</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  [(visible)]="dialogoVisible"
+  [modal]="true"
+  [header]="productoEnEdicion ? 'Editar producto' : 'Agregar producto'"
+  [style]="{ width: '420px' }"
+  (onHide)="cerrarDialogo()"
+>
+  @if (dialogoVisible) {
+    <aplicacion-formulario-producto
+      [producto]="productoEnEdicion"
+      [guardando]="guardando"
+      (guardar)="guardarProducto($event)"
+      (cancelar)="cerrarDialogo()"
+    ></aplicacion-formulario-producto>
+  }
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>
